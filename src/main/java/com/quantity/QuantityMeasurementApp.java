@@ -38,6 +38,17 @@ public class QuantityMeasurementApp {
 			return value * unit.getConversionFactor();
 		}
 
+		public QuantityLength convertTo(LengthUnit targetUnit) {
+			if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+			double baseValue = toBaseUnit();
+			double converted = roundToTwoDecimals(baseValue / targetUnit.getConversionFactor());
+			return new QuantityLength(converted, targetUnit);
+		}
+
+		private double roundToTwoDecimals(double val) {
+			return Math.round(val * 100.0) / 100.0;
+		}
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
@@ -57,19 +68,30 @@ public class QuantityMeasurementApp {
 		}
 	}
 
-	public static void main(String[] args) {
-		QuantityLength a = new QuantityLength(1.0, LengthUnit.YARDS);
-		QuantityLength b = new QuantityLength(3.0, LengthUnit.FEET);
-		System.out.println(a.equals(b));
-
-		QuantityLength c = new QuantityLength(1.0, LengthUnit.YARDS);
-		QuantityLength d = new QuantityLength(36.0, LengthUnit.INCH);
-		System.out.println(c.equals(d));
-
-		QuantityLength e = new QuantityLength(1.0, LengthUnit.CENTIMETERS);
-		QuantityLength f = new QuantityLength(0.393701, LengthUnit.INCH);
-		System.out.println(e.equals(f));
+	public static void demonstrateLengthConversion(double value, LengthUnit from, LengthUnit to) {
+		QuantityLength length = new QuantityLength(value, from);
+		QuantityLength result = length.convertTo(to);
+		System.out.println("convert(" + value + ", " + from + ", " + to + ") = " + result.toString());
 	}
-}
 
+	public static void demonstrateLengthConversion(QuantityLength length, LengthUnit to) {
+		QuantityLength result = length.convertTo(to);
+		System.out.println("convert(" + length + " to " + to + ") = " + result.toString());
+	}
+
+	public static void demonstrateLengthEquality(QuantityLength a, QuantityLength b) {
+		System.out.println(a + " == " + b + " : " + a.equals(b));
+	}
+
+	public static void demonstrateLengthComparison(double v1, LengthUnit u1, double v2, LengthUnit u2) {
+		demonstrateLengthEquality(new QuantityLength(v1, u1), new QuantityLength(v2, u2));
+	}
+
+	public static void main(String[] args) {
+		demonstrateLengthConversion(1.0, LengthUnit.FEET, LengthUnit.INCH);
+		demonstrateLengthConversion(3.0, LengthUnit.YARDS, LengthUnit.FEET);
+		demonstrateLengthConversion(36.0, LengthUnit.INCH, LengthUnit.YARDS);
+		demonstrateLengthConversion(1.0, LengthUnit.CENTIMETERS, LengthUnit.INCH);
+		demonstrateLengthConversion(0.0, LengthUnit.FEET, LengthUnit.INCH);
+	}
 }
