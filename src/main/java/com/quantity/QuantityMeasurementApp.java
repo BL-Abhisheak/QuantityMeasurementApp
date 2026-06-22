@@ -1,6 +1,5 @@
 package com.quantity;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
@@ -51,6 +50,14 @@ public class QuantityMeasurementApp {
 			return new QuantityLength(result, this.unit);
 		}
 
+		public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+			if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+			if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+			double sumBase = this.toBaseUnit() + other.toBaseUnit();
+			double result = roundToTwoDecimals(sumBase / targetUnit.getConversionFactor());
+			return new QuantityLength(result, targetUnit);
+		}
+
 		private double roundToTwoDecimals(double val) {
 			return Math.round(val * 100.0) / 100.0;
 		}
@@ -93,15 +100,9 @@ public class QuantityMeasurementApp {
 
 	public static void main(String[] args) {
 		QuantityLength a = new QuantityLength(1.0, LengthUnit.FEET);
-		QuantityLength b = new QuantityLength(2.0, LengthUnit.FEET);
-		System.out.println(a.add(b));
-
-		QuantityLength c = new QuantityLength(1.0, LengthUnit.FEET);
-		QuantityLength d = new QuantityLength(12.0, LengthUnit.INCH);
-		System.out.println(c.add(d));
-
-		QuantityLength e = new QuantityLength(12.0, LengthUnit.INCH);
-		QuantityLength f = new QuantityLength(1.0, LengthUnit.FEET);
-		System.out.println(e.add(f));
+		QuantityLength b = new QuantityLength(12.0, LengthUnit.INCH);
+		System.out.println(a.add(b, LengthUnit.FEET));
+		System.out.println(a.add(b, LengthUnit.INCH));
+		System.out.println(a.add(b, LengthUnit.YARDS));
 	}
 }
