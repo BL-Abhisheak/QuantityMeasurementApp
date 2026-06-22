@@ -40,9 +40,15 @@ public class QuantityMeasurementApp {
 
 		public QuantityLength convertTo(LengthUnit targetUnit) {
 			if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
-			double baseValue = toBaseUnit();
-			double converted = roundToTwoDecimals(baseValue / targetUnit.getConversionFactor());
+			double converted = roundToTwoDecimals(toBaseUnit() / targetUnit.getConversionFactor());
 			return new QuantityLength(converted, targetUnit);
+		}
+
+		public QuantityLength add(QuantityLength other) {
+			if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+			double sumBase = this.toBaseUnit() + other.toBaseUnit();
+			double result = roundToTwoDecimals(sumBase / this.unit.getConversionFactor());
+			return new QuantityLength(result, this.unit);
 		}
 
 		private double roundToTwoDecimals(double val) {
@@ -68,19 +74,17 @@ public class QuantityMeasurementApp {
 		}
 	}
 
+	public static void demonstrateLengthEquality(QuantityLength a, QuantityLength b) {
+		System.out.println(a + " == " + b + " : " + a.equals(b));
+	}
+
 	public static void demonstrateLengthConversion(double value, LengthUnit from, LengthUnit to) {
 		QuantityLength length = new QuantityLength(value, from);
-		QuantityLength result = length.convertTo(to);
-		System.out.println("convert(" + value + ", " + from + ", " + to + ") = " + result.toString());
+		System.out.println("convert(" + value + " " + from + " to " + to + ") = " + length.convertTo(to));
 	}
 
 	public static void demonstrateLengthConversion(QuantityLength length, LengthUnit to) {
-		QuantityLength result = length.convertTo(to);
-		System.out.println("convert(" + length + " to " + to + ") = " + result.toString());
-	}
-
-	public static void demonstrateLengthEquality(QuantityLength a, QuantityLength b) {
-		System.out.println(a + " == " + b + " : " + a.equals(b));
+		System.out.println("convert(" + length + " to " + to + ") = " + length.convertTo(to));
 	}
 
 	public static void demonstrateLengthComparison(double v1, LengthUnit u1, double v2, LengthUnit u2) {
@@ -88,10 +92,16 @@ public class QuantityMeasurementApp {
 	}
 
 	public static void main(String[] args) {
-		demonstrateLengthConversion(1.0, LengthUnit.FEET, LengthUnit.INCH);
-		demonstrateLengthConversion(3.0, LengthUnit.YARDS, LengthUnit.FEET);
-		demonstrateLengthConversion(36.0, LengthUnit.INCH, LengthUnit.YARDS);
-		demonstrateLengthConversion(1.0, LengthUnit.CENTIMETERS, LengthUnit.INCH);
-		demonstrateLengthConversion(0.0, LengthUnit.FEET, LengthUnit.INCH);
+		QuantityLength a = new QuantityLength(1.0, LengthUnit.FEET);
+		QuantityLength b = new QuantityLength(2.0, LengthUnit.FEET);
+		System.out.println(a.add(b));
+
+		QuantityLength c = new QuantityLength(1.0, LengthUnit.FEET);
+		QuantityLength d = new QuantityLength(12.0, LengthUnit.INCH);
+		System.out.println(c.add(d));
+
+		QuantityLength e = new QuantityLength(12.0, LengthUnit.INCH);
+		QuantityLength f = new QuantityLength(1.0, LengthUnit.FEET);
+		System.out.println(e.add(f));
 	}
 }
