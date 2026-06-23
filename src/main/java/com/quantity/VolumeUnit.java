@@ -6,6 +6,7 @@ public enum VolumeUnit implements IMeasurable {
     GALLON(3.78541);
 
     private final double conversionFactor;
+    public final SupportsArithmetic supportsArithmetic = () -> true;
 
     VolumeUnit(double conversionFactor) {
         this.conversionFactor = conversionFactor;
@@ -29,5 +30,10 @@ public enum VolumeUnit implements IMeasurable {
     @Override
     public String getUnitName() {
         return this.name();
+    }
+
+    @Override
+    public boolean supportsArithmetic() {
+        return supportsArithmetic.isSupported();
     }
 }

@@ -26,13 +26,28 @@ public class QuantityMeasurementApp {
 	}
 
 	public static void main(String[] args) {
-		Quantity<LengthUnit> a = new Quantity<>(10.0, LengthUnit.FEET);
-		Quantity<LengthUnit> b = new Quantity<>(6.0, LengthUnit.INCH);
-		demonstrateSubtraction(a, b, LengthUnit.FEET);
-		demonstrateDivision(a, new Quantity<>(2.0, LengthUnit.FEET));
+		Quantity<TemperatureUnit> t1 = new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+		Quantity<TemperatureUnit> t2 = new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+		demonstrateEquality(t1, t2);
+		demonstrateConversion(t1, TemperatureUnit.FAHRENHEIT);
+		demonstrateConversion(t2, TemperatureUnit.CELSIUS);
 
-		Quantity<WeightUnit> wa = new Quantity<>(10.0, WeightUnit.KILOGRAM);
-		Quantity<WeightUnit> wb = new Quantity<>(5000.0, WeightUnit.GRAM);
-		demonstrateSubtraction(wa, wb, WeightUnit.KILOGRAM);
+		try {
+			t1.add(t2);
+		} catch (UnsupportedOperationException e) {
+			System.out.println("Caught: " + e.getMessage());
+		}
+
+		try {
+			t1.subtract(t2);
+		} catch (UnsupportedOperationException e) {
+			System.out.println("Caught: " + e.getMessage());
+		}
+
+		try {
+			t1.divide(t2);
+		} catch (UnsupportedOperationException e) {
+			System.out.println("Caught: " + e.getMessage());
+		}
 	}
 }
