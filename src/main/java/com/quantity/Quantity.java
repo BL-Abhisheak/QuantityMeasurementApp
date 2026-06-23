@@ -1,5 +1,4 @@
 package com.quantity;
-
 public class Quantity<U extends IMeasurable> {
     private final double value;
     private final U unit;
@@ -31,7 +30,7 @@ public class Quantity<U extends IMeasurable> {
 
     public Quantity<U> add(Quantity<U> other) {
         if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot add different measurement categories");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
         double sumBase = this.toBaseUnit() + other.toBaseUnit();
         return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(sumBase)), this.unit);
     }
@@ -39,9 +38,32 @@ public class Quantity<U extends IMeasurable> {
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
         if (other == null) throw new IllegalArgumentException("Operand cannot be null");
         if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot add different measurement categories");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
         double sumBase = this.toBaseUnit() + other.toBaseUnit();
         return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(sumBase)), targetUnit);
+    }
+
+    public Quantity<U> subtract(Quantity<U> other) {
+        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
+        double diffBase = this.toBaseUnit() - other.toBaseUnit();
+        return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(diffBase)), this.unit);
+    }
+
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+        if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
+        double diffBase = this.toBaseUnit() - other.toBaseUnit();
+        return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(diffBase)), targetUnit);
+    }
+
+    public double divide(Quantity<U> other) {
+        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
+        double otherBase = other.toBaseUnit();
+        if (otherBase == 0.0) throw new ArithmeticException("Divide by zero");
+        return this.toBaseUnit() / otherBase;
     }
 
     private double roundToTwoDecimals(double val) {
