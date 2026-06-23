@@ -1,7 +1,29 @@
 package com.quantity;
+
+import java.util.function.DoubleBinaryOperator;
+
 public class Quantity<U extends IMeasurable> {
     private final double value;
     private final U unit;
+
+    public enum ArithmeticOperation {
+        ADD((a, b) -> a + b),
+        SUBTRACT((a, b) -> a - b),
+        DIVIDE((a, b) -> {
+            if (b == 0.0) throw new ArithmeticException("Divide by zero");
+            return a / b;
+        });
+
+        private final DoubleBinaryOperator operator;
+
+        ArithmeticOperation(DoubleBinaryOperator operator) {
+            this.operator = operator;
+        }
+
+        public double compute(double a, double b) {
+            return operator.applyAsDouble(a, b);
+        }
+    }
 
     public Quantity(double value, U unit) {
         if (unit == null) throw new IllegalArgumentException("Unit cannot be null");
@@ -22,6 +44,19 @@ public class Quantity<U extends IMeasurable> {
         return unit.convertToBaseUnit(value);
     }
 
+    private void validateArithmeticOperands(Quantity<U> other, U targetUnit, boolean targetUnitRequired) {
+        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
+        if (this.unit.getClass() != other.unit.getClass())
+            throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories: "
+                    + this.unit.getClass().getSimpleName() + " and " + other.unit.getClass().getSimpleName());
+        if (!Double.isFinite(other.value)) throw new IllegalArgumentException("Operand value must be finite");
+        if (targetUnitRequired && targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+    }
+
+    private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+        return operation.compute(this.toBaseUnit(), other.toBaseUnit());
+    }
+
     public Quantity<U> convertTo(U targetUnit) {
         if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
         double converted = roundToTwoDecimals(targetUnit.convertFromBaseUnit(toBaseUnit()));
@@ -29,41 +64,32 @@ public class Quantity<U extends IMeasurable> {
     }
 
     public Quantity<U> add(Quantity<U> other) {
-        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
-        double sumBase = this.toBaseUnit() + other.toBaseUnit();
-        return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(sumBase)), this.unit);
+        validateArithmeticOperands(other, null, false);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.ADD);
+        return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(baseResult)), this.unit);
     }
 
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
-        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
-        double sumBase = this.toBaseUnit() + other.toBaseUnit();
-        return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(sumBase)), targetUnit);
+        validateArithmeticOperands(other, targetUnit, true);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.ADD);
+        return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(baseResult)), targetUnit);
     }
 
     public Quantity<U> subtract(Quantity<U> other) {
-        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
-        double diffBase = this.toBaseUnit() - other.toBaseUnit();
-        return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(diffBase)), this.unit);
+        validateArithmeticOperands(other, null, false);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.SUBTRACT);
+        return new Quantity<>(roundToTwoDecimals(unit.convertFromBaseUnit(baseResult)), this.unit);
     }
 
     public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
-        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
-        double diffBase = this.toBaseUnit() - other.toBaseUnit();
-        return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(diffBase)), targetUnit);
+        validateArithmeticOperands(other, targetUnit, true);
+        double baseResult = performBaseArithmetic(other, ArithmeticOperation.SUBTRACT);
+        return new Quantity<>(roundToTwoDecimals(targetUnit.convertFromBaseUnit(baseResult)), targetUnit);
     }
 
     public double divide(Quantity<U> other) {
-        if (other == null) throw new IllegalArgumentException("Operand cannot be null");
-        if (this.unit.getClass() != other.unit.getClass()) throw new IllegalArgumentException("Cannot perform arithmetic between different measurement categories");
-        double otherBase = other.toBaseUnit();
-        if (otherBase == 0.0) throw new ArithmeticException("Divide by zero");
-        return this.toBaseUnit() / otherBase;
+        validateArithmeticOperands(other, null, false);
+        return performBaseArithmetic(other, ArithmeticOperation.DIVIDE);
     }
 
     private double roundToTwoDecimals(double val) {
