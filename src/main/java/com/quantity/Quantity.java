@@ -2,6 +2,8 @@ package com.quantity;
 
 import java.util.function.DoubleBinaryOperator;
 
+import java.util.function.DoubleBinaryOperator;
+
 public class Quantity<U extends IMeasurable> {
     private final double value;
     private final U unit;
@@ -54,11 +56,17 @@ public class Quantity<U extends IMeasurable> {
     }
 
     private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+        this.unit.validateOperationSupport(operation.name());
         return operation.compute(this.toBaseUnit(), other.toBaseUnit());
     }
 
     public Quantity<U> convertTo(U targetUnit) {
         if (targetUnit == null) throw new IllegalArgumentException("Target unit cannot be null");
+        if (this.unit instanceof TemperatureUnit) {
+            double baseValue = this.unit.convertToBaseUnit(this.value);
+            double converted = roundToTwoDecimals(targetUnit.convertFromBaseUnit(baseValue));
+            return new Quantity<>(converted, targetUnit);
+        }
         double converted = roundToTwoDecimals(targetUnit.convertFromBaseUnit(toBaseUnit()));
         return new Quantity<>(converted, targetUnit);
     }
