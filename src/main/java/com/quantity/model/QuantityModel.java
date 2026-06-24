@@ -3,6 +3,7 @@ package com.quantity.model;
 import com.quantity.unit.IMeasurable;
 
 public class QuantityModel<U extends IMeasurable> {
+
     private final double value;
     private final U unit;
 
@@ -13,9 +14,4 @@ public class QuantityModel<U extends IMeasurable> {
 
     public double getValue() { return value; }
     public U getUnit() { return unit; }
-
-    @Override
-    public String toString() {
-        return value + " " + unit.getUnitName();
-    }
 }

@@ -1,245 +1,412 @@
 package com.quantity;
 
-import com.quantity.controller.QuantityMeasurementController;
-import com.quantity.dto.QuantityDTO;
-import com.quantity.exception.QuantityMeasurementException;
-import com.quantity.repository.IQuantityMeasurementRepository;
-import com.quantity.repository.QuantityMeasurementCacheRepository;
-import com.quantity.service.IQuantityMeasurementService;
-import com.quantity.service.QuantityMeasurementServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
+import com.quantity.unit.LengthUnit;
+import com.quantity.unit.TemperatureUnit;
+import com.quantity.unit.VolumeUnit;
+import com.quantity.unit.WeightUnit;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class QuantityMeasurementAppTest {
 
-    private IQuantityMeasurementRepository repository;
-    private IQuantityMeasurementService service;
-    private QuantityMeasurementController controller;
-
-    @BeforeEach
-    public void setUp() {
-        repository = QuantityMeasurementCacheRepository.getInstance();
-        repository.deleteAll();
-        service = new QuantityMeasurementServiceImpl(repository);
-        controller = new QuantityMeasurementController(service);
-    }
-
+    private static final double EPSILON = 0.01;
 
     @Test
-    public void testService_CompareEquality_SameUnit_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        assertTrue(service.compare(a, b));
-    }
+    public void testEquality_LitreToLitre_SameValue() {
 
-    @Test
-    public void testService_CompareEquality_DifferentUnit_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(12.0, "INCH", "LengthUnit");
-        assertTrue(service.compare(a, b));
+        assertTrue(
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).equals(
+                        new Quantity<>(
+                                1.0,
+                                VolumeUnit.LITRE
+                        )
+                )
+        );
     }
 
     @Test
-    public void testService_CompareInequality_DifferentValues_Fails() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(10.0, "INCH", "LengthUnit");
-        assertFalse(service.compare(a, b));
+    public void testEquality_LitreToMillilitre_EquivalentValue() {
+
+        assertTrue(
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).equals(
+                        new Quantity<>(
+                                1000.0,
+                                VolumeUnit.MILLILITRE
+                        )
+                )
+        );
     }
 
     @Test
-    public void testService_Compare_DifferentCategories_ThrowsException() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        assertThrows(QuantityMeasurementException.class, () -> service.compare(a, b));
-    }
+    public void testEquality_GallonToLitre_EquivalentValue() {
 
-
-    @Test
-    public void testService_Convert_FeetToInch_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO result = service.convert(a, "INCH");
-        assertEquals(12.0, result.getValue(), 1e-2);
-    }
-
-    @Test
-    public void testService_Convert_InchToFeet_Success() {
-        QuantityDTO a = new QuantityDTO(12.0, "INCH", "LengthUnit");
-        QuantityDTO result = service.convert(a, "FEET");
-        assertEquals(1.0, result.getValue(), 1e-2);
+        assertTrue(
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.GALLON
+                ).equals(
+                        new Quantity<>(
+                                3.78541,
+                                VolumeUnit.LITRE
+                        )
+                )
+        );
     }
 
     @Test
-    public void testService_Convert_FeetToYards_Success() {
-        QuantityDTO a = new QuantityDTO(3.0, "FEET", "LengthUnit");
-        QuantityDTO result = service.convert(a, "YARDS");
-        assertEquals(1.0, result.getValue(), 1e-2);
-    }
+    public void testEquality_VolumeVsLength_Incompatible() {
 
+        Quantity<VolumeUnit> volume =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                );
 
-    @Test
-    public void testService_Add_FeetAndInch_InFeet_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(12.0, "INCH", "LengthUnit");
-        QuantityDTO result = service.add(a, b, "FEET");
-        assertEquals(2.0, result.getValue(), 1e-2);
-    }
+        Quantity<LengthUnit> length =
+                new Quantity<>(
+                        1.0,
+                        LengthUnit.FEET
+                );
 
-    @Test
-    public void testService_Add_FeetAndFeet_InFeet_Success() {
-        QuantityDTO a = new QuantityDTO(2.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(3.0, "FEET", "LengthUnit");
-        QuantityDTO result = service.add(a, b, "FEET");
-        assertEquals(5.0, result.getValue(), 1e-2);
+        assertFalse(volume.equals(length));
     }
 
     @Test
-    public void testService_Add_NoTargetUnit_UsesFirstUnit() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO result = service.add(a, b);
-        assertEquals(2.0, result.getValue(), 1e-2);
-        assertEquals("FEET", result.getUnit());
-    }
+    public void testEquality_VolumeVsWeight_Incompatible() {
 
+        Quantity<VolumeUnit> volume =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                );
 
-    @Test
-    public void testService_Subtract_FeetAndInch_Success() {
-        QuantityDTO a = new QuantityDTO(10.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(6.0, "INCH", "LengthUnit");
-        QuantityDTO result = service.subtract(a, b);
-        assertEquals(9.5, result.getValue(), 1e-2);
-    }
+        Quantity<WeightUnit> weight =
+                new Quantity<>(
+                        1.0,
+                        WeightUnit.KILOGRAM
+                );
 
-    @Test
-    public void testService_Subtract_SameUnit_Success() {
-        QuantityDTO a = new QuantityDTO(5.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(2.0, "FEET", "LengthUnit");
-        QuantityDTO result = service.subtract(a, b);
-        assertEquals(3.0, result.getValue(), 1e-2);
+        assertFalse(volume.equals(weight));
     }
 
     @Test
-    public void testService_Divide_Success() {
-        QuantityDTO a = new QuantityDTO(10.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(2.0, "FEET", "LengthUnit");
-        assertEquals(5.0, service.divide(a, b), 1e-6);
+    public void testConversion_LitreToMillilitre() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).convertTo(
+                        VolumeUnit.MILLILITRE
+                );
+
+        assertEquals(
+                1000.0,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testService_Divide_ByZero_ThrowsException() {
-        QuantityDTO a = new QuantityDTO(10.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(0.0, "FEET", "LengthUnit");
-        assertThrows(QuantityMeasurementException.class, () -> service.divide(a, b));
-    }
+    public void testConversion_MillilitreToLitre() {
 
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1000.0,
+                        VolumeUnit.MILLILITRE
+                ).convertTo(
+                        VolumeUnit.LITRE
+                );
 
-    @Test
-    public void testService_Weight_CompareKilogramAndGram_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        QuantityDTO b = new QuantityDTO(1000.0, "GRAM", "WeightUnit");
-        assertTrue(service.compare(a, b));
-    }
-
-    @Test
-    public void testService_Weight_Convert_KilogramToGram_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        QuantityDTO result = service.convert(a, "GRAM");
-        assertEquals(1000.0, result.getValue(), 1e-2);
+        assertEquals(
+                1.0,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testService_Weight_Add_KilogramAndGram_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        QuantityDTO b = new QuantityDTO(500.0, "GRAM", "WeightUnit");
-        QuantityDTO result = service.add(a, b, "KILOGRAM");
-        assertEquals(1.5, result.getValue(), 1e-2);
-    }
+    public void testConversion_GallonToLitre() {
 
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.GALLON
+                ).convertTo(
+                        VolumeUnit.LITRE
+                );
 
-    @Test
-    public void testService_Volume_CompareLitreAndMillilitre_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "LITRE", "VolumeUnit");
-        QuantityDTO b = new QuantityDTO(1000.0, "MILLILITRE", "VolumeUnit");
-        assertTrue(service.compare(a, b));
-    }
-
-    @Test
-    public void testService_Volume_Convert_LitreToMillilitre_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "LITRE", "VolumeUnit");
-        QuantityDTO result = service.convert(a, "MILLILITRE");
-        assertEquals(1000.0, result.getValue(), 1e-2);
+        assertEquals(
+                3.78541,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testService_Volume_Add_LitreAndMillilitre_Success() {
-        QuantityDTO a = new QuantityDTO(1.0, "LITRE", "VolumeUnit");
-        QuantityDTO b = new QuantityDTO(500.0, "MILLILITRE", "VolumeUnit");
-        QuantityDTO result = service.add(a, b, "LITRE");
-        assertEquals(1.5, result.getValue(), 1e-2);
-    }
+    public void testConversion_LitreToGallon() {
 
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        3.78541,
+                        VolumeUnit.LITRE
+                ).convertTo(
+                        VolumeUnit.GALLON
+                );
 
-    @Test
-    public void testService_Temperature_CompareEquality_CelsiusAndFahrenheit() {
-        QuantityDTO a = new QuantityDTO(0.0, "CELSIUS", "TemperatureUnit");
-        QuantityDTO b = new QuantityDTO(32.0, "FAHRENHEIT", "TemperatureUnit");
-        assertTrue(service.compare(a, b));
-    }
-
-    @Test
-    public void testService_Temperature_Convert_CelsiusToFahrenheit_Success() {
-        QuantityDTO a = new QuantityDTO(100.0, "CELSIUS", "TemperatureUnit");
-        QuantityDTO result = service.convert(a, "FAHRENHEIT");
-        assertEquals(212.0, result.getValue(), 1e-2);
+        assertEquals(
+                1.0,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testService_Temperature_Convert_FahrenheitToCelsius_Success() {
-        QuantityDTO a = new QuantityDTO(32.0, "FAHRENHEIT", "TemperatureUnit");
-        QuantityDTO result = service.convert(a, "CELSIUS");
-        assertEquals(0.0, result.getValue(), 1e-2);
+    public void testConversion_RoundTrip() {
+
+        Quantity<VolumeUnit> original =
+                new Quantity<>(
+                        1.5,
+                        VolumeUnit.LITRE
+                );
+
+        Quantity<VolumeUnit> result =
+                original.convertTo(
+                        VolumeUnit.MILLILITRE
+                ).convertTo(
+                        VolumeUnit.LITRE
+                );
+
+        assertEquals(
+                original.getValue(),
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testService_Temperature_Add_ThrowsUnsupportedOperation() {
-        QuantityDTO a = new QuantityDTO(0.0, "CELSIUS", "TemperatureUnit");
-        QuantityDTO b = new QuantityDTO(32.0, "FAHRENHEIT", "TemperatureUnit");
-        assertThrows(QuantityMeasurementException.class, () -> service.add(a, b));
-    }
+    public void testAddition_SameUnit_LitrePlusLitre() {
 
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                2.0,
+                                VolumeUnit.LITRE
+                        )
+                );
 
-    @Test
-    public void testLayerSeparation_ServiceIndependence() {
-        IQuantityMeasurementService s = new QuantityMeasurementServiceImpl(repository);
-        QuantityDTO a = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        QuantityDTO b = new QuantityDTO(1000.0, "GRAM", "WeightUnit");
-        assertTrue(s.compare(a, b));
-    }
-
-    @Test
-    public void testLayerSeparation_RepositorySavesOnSuccess() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(12.0, "INCH", "LengthUnit");
-        service.compare(a, b);
-        assertTrue(repository.getTotalCount() > 0);
+        assertEquals(
+                3.0,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testLayerSeparation_RepositorySavesOnError() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(1.0, "KILOGRAM", "WeightUnit");
-        assertThrows(QuantityMeasurementException.class, () -> service.compare(a, b));
-        assertTrue(repository.getTotalCount() > 0);
+    public void testAddition_CrossUnit_LitrePlusMillilitre() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                1000.0,
+                                VolumeUnit.MILLILITRE
+                        )
+                );
+
+        assertEquals(
+                2.0,
+                result.getValue(),
+                EPSILON
+        );
     }
 
     @Test
-    public void testLayerSeparation_DeleteAll_ClearsRepository() {
-        QuantityDTO a = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        QuantityDTO b = new QuantityDTO(1.0, "FEET", "LengthUnit");
-        service.compare(a, b);
-        repository.deleteAll();
-        assertEquals(0, repository.getTotalCount());
+    public void testAddition_CrossUnit_GallonPlusLitre() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.GALLON
+                ).add(
+                        new Quantity<>(
+                                3.78541,
+                                VolumeUnit.LITRE
+                        )
+                );
+
+        assertEquals(
+                2.0,
+                result.getValue(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testAddition_ExplicitTargetUnit_Millilitre() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        1.0,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                1000.0,
+                                VolumeUnit.MILLILITRE
+                        ),
+                        VolumeUnit.MILLILITRE
+                );
+
+        assertEquals(
+                2000.0,
+                result.getValue(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testAddition_ExplicitTargetUnit_Gallon() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        3.78541,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                3.78541,
+                                VolumeUnit.LITRE
+                        ),
+                        VolumeUnit.GALLON
+                );
+
+        assertEquals(
+                2.0,
+                result.getValue(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testAddition_WithZero() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        5.0,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                0.0,
+                                VolumeUnit.MILLILITRE
+                        )
+                );
+
+        assertEquals(
+                5.0,
+                result.getValue(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testAddition_NegativeValues() {
+
+        Quantity<VolumeUnit> result =
+                new Quantity<>(
+                        5.0,
+                        VolumeUnit.LITRE
+                ).add(
+                        new Quantity<>(
+                                -2000.0,
+                                VolumeUnit.MILLILITRE
+                        )
+                );
+
+        assertEquals(
+                3.0,
+                result.getValue(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testVolumeUnitEnum_LitreConstant() {
+
+        assertEquals(
+                1.0,
+                VolumeUnit.LITRE.getConversionFactor(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testVolumeUnitEnum_GallonConstant() {
+
+        assertEquals(
+                3.78541,
+                VolumeUnit.GALLON.getConversionFactor(),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testConvertToBaseUnit_MillilitreToLitre() {
+
+        assertEquals(
+                1.0,
+                VolumeUnit.MILLILITRE
+                        .convertToBaseUnit(1000.0),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testConvertFromBaseUnit_LitreToGallon() {
+
+        assertEquals(
+                1.0,
+                VolumeUnit.GALLON
+                        .convertFromBaseUnit(3.78541),
+                EPSILON
+        );
+    }
+
+    @Test
+    public void testTemperatureEquality_CelsiusToFahrenheit() {
+
+        assertTrue(
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS)
+                        .equals(new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT))
+        );
+    }
+
+    @Test
+    public void testTemperatureConversion() {
+
+        Quantity<TemperatureUnit> result =
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                        .convertTo(TemperatureUnit.FAHRENHEIT);
+
+        assertEquals(212.0, result.getValue(), 0.01);
+    }
+
+    @Test
+    public void testTemperatureVsLength_NotEqual() {
+
+        assertFalse(
+                new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                        .equals(new Quantity<>(100.0, LengthUnit.FEET))
+        );
     }
 }

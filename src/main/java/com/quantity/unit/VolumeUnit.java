@@ -1,12 +1,13 @@
 package com.quantity.unit;
 
+
 public enum VolumeUnit implements IMeasurable {
+
     LITRE(1.0),
     MILLILITRE(0.001),
     GALLON(3.78541);
 
     private final double conversionFactor;
-    public final SupportsArithmetic supportsArithmetic = () -> true;
 
     VolumeUnit(double conversionFactor) {
         this.conversionFactor = conversionFactor;
@@ -29,21 +30,6 @@ public enum VolumeUnit implements IMeasurable {
 
     @Override
     public String getUnitName() {
-        return this.name();
-    }
-
-    @Override
-    public boolean supportsArithmetic() {
-        return supportsArithmetic.isSupported();
-    }
-
-    @Override
-    public void validateOperationSupport(String operation) {
-        IMeasurable.super.validateOperationSupport(operation);
-    }
-
-    @Override
-    public String getMeasurementType() {
-        return "VolumeUnit";
+        return name();
     }
 }
