@@ -1,27 +1,18 @@
 package com.quantity.dto;
 
 public class QuantityDTO {
+
     private double value;
     private String unit;
-    private String measurementType;
+    private String type; // LENGTH, WEIGHT, VOLUME, TEMPERATURE
 
-    public QuantityDTO() {}
-
-    public QuantityDTO(double value, String unit, String measurementType) {
+    public QuantityDTO(double value, String unit, String type) {
         this.value = value;
         this.unit = unit;
-        this.measurementType = measurementType;
+        this.type = type;
     }
 
     public double getValue() { return value; }
-    public void setValue(double value) { this.value = value; }
     public String getUnit() { return unit; }
-    public void setUnit(String unit) { this.unit = unit; }
-    public String getMeasurementType() { return measurementType; }
-    public void setMeasurementType(String measurementType) { this.measurementType = measurementType; }
-
-    @Override
-    public String toString() {
-        return value + " " + unit + " (" + measurementType + ")";
-    }
+    public String getType() { return type; }
 }

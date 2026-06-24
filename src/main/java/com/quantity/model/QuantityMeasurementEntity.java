@@ -1,87 +1,44 @@
 package com.quantity.model;
+
+import com.quantity.dto.QuantityDTO;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import java.io.Serializable;
+
 public class QuantityMeasurementEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-    private double thisValue;
-    private String thisUnit;
-    private String thisMeasurementType;
-    private double thatValue;
-    private String thatUnit;
-    private String thatMeasurementType;
     private String operation;
-    private String resultString;
-    private double resultValue;
-    private String resultUnit;
-    private String resultMeasurementType;
-    private String errorMessage;
-    private boolean error;
-    private LocalDateTime timestamp;
+    private QuantityDTO input1;
+    private QuantityDTO input2;
+    private Object result;
+    private String error;
 
-    public QuantityMeasurementEntity(double thisValue, String thisUnit, String thisMeasurementType,
-                                     String operation, String resultString) {
-        this.thisValue = thisValue;
-        this.thisUnit = thisUnit;
-        this.thisMeasurementType = thisMeasurementType;
+    public QuantityMeasurementEntity(
+            String operation,
+            QuantityDTO input1,
+            QuantityDTO input2,
+            Object result
+    ) {
         this.operation = operation;
-        this.resultString = resultString;
-        this.error = false;
-        this.timestamp = LocalDateTime.now();
+        this.input1 = input1;
+        this.input2 = input2;
+        this.result = result;
     }
 
-    public QuantityMeasurementEntity(double thisValue, String thisUnit, String thisMeasurementType,
-                                     double thatValue, String thatUnit, String thatMeasurementType,
-                                     String operation, double resultValue, String resultUnit, String resultMeasurementType) {
-        this.thisValue = thisValue;
-        this.thisUnit = thisUnit;
-        this.thisMeasurementType = thisMeasurementType;
-        this.thatValue = thatValue;
-        this.thatUnit = thatUnit;
-        this.thatMeasurementType = thatMeasurementType;
-        this.operation = operation;
-        this.resultValue = resultValue;
-        this.resultUnit = resultUnit;
-        this.resultMeasurementType = resultMeasurementType;
-        this.error = false;
-        this.timestamp = LocalDateTime.now();
-    }
-
-    public QuantityMeasurementEntity(double thisValue, String thisUnit, String thisMeasurementType,
-                                     double thatValue, String thatUnit, String thatMeasurementType,
-                                     String operation, String errorMessage, boolean error) {
-        this.thisValue = thisValue;
-        this.thisUnit = thisUnit;
-        this.thisMeasurementType = thisMeasurementType;
-        this.thatValue = thatValue;
-        this.thatUnit = thatUnit;
-        this.thatMeasurementType = thatMeasurementType;
-        this.operation = operation;
-        this.errorMessage = errorMessage;
+    public QuantityMeasurementEntity(String error) {
         this.error = error;
-        this.timestamp = LocalDateTime.now();
     }
 
-    public double getThisValue() { return thisValue; }
-    public String getThisUnit() { return thisUnit; }
-    public String getThisMeasurementType() { return thisMeasurementType; }
-    public double getThatValue() { return thatValue; }
-    public String getThatUnit() { return thatUnit; }
-    public String getThatMeasurementType() { return thatMeasurementType; }
-    public String getOperation() { return operation; }
-    public String getResultString() { return resultString; }
-    public double getResultValue() { return resultValue; }
-    public String getResultUnit() { return resultUnit; }
-    public String getResultMeasurementType() { return resultMeasurementType; }
-    public String getErrorMessage() { return errorMessage; }
-    public boolean isError() { return error; }
-    public LocalDateTime getTimestamp() { return timestamp; }
+    public boolean hasError() {
+        return error != null;
+    }
 
     @Override
     public String toString() {
-        if (error) return "[ERROR] " + operation + ": " + errorMessage;
-        if (resultString != null) return operation + "(" + thisValue + " " + thisUnit + ", " + thatValue + " " + thatUnit + ") = " + resultString;
-        return operation + "(" + thisValue + " " + thisUnit + ", " + thatValue + " " + thatUnit + ") = " + resultValue + " " + resultUnit;
+        return hasError()
+                ? "Error: " + error
+                : "Result: " + result;
     }
 }
