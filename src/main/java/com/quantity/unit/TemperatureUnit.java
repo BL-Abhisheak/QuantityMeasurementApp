@@ -1,5 +1,4 @@
-package com.quantity;
-
+package com.quantity.unit;
 import java.util.function.Function;
 
 public enum TemperatureUnit implements IMeasurable {
@@ -16,6 +15,12 @@ public enum TemperatureUnit implements IMeasurable {
         public double convertFromBaseUnit(double baseValue) {
             return fromCelsius.apply(baseValue);
         }
+
+        @Override
+        public Object getMeasurementType() {
+            return null;
+        }
+
     },
     FAHRENHEIT {
         private final Function<Double, Double> toCelsius = f -> (f - 32.0) * 5.0 / 9.0;
@@ -29,6 +34,11 @@ public enum TemperatureUnit implements IMeasurable {
         @Override
         public double convertFromBaseUnit(double baseValue) {
             return fromCelsius.apply(baseValue);
+        }
+
+        @Override
+        public String getMeasurementType() {
+            return "";
         }
     };
 

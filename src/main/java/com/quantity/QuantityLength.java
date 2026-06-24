@@ -1,5 +1,7 @@
 package com.quantity;
 
+import com.quantity.unit.LengthUnit;
+
 public class QuantityLength {
     private final double value;
     private final LengthUnit unit;
