@@ -1,4 +1,4 @@
-package com.quantity;
+package com.quantity.unit;
 
 public enum WeightUnit implements IMeasurable {
     KILOGRAM(1.0),
@@ -35,5 +35,15 @@ public enum WeightUnit implements IMeasurable {
     @Override
     public boolean supportsArithmetic() {
         return supportsArithmetic.isSupported();
+    }
+
+    @Override
+    public void validateOperationSupport(String operation) {
+        IMeasurable.super.validateOperationSupport(operation);
+    }
+
+    @Override
+    public String getMeasurementType() {
+        return "WeightUnit";
     }
 }
