@@ -1,4 +1,4 @@
-package com.quantity;
+package com.quantity.unit;
 
 public enum LengthUnit implements IMeasurable {
     FEET(1.0),
@@ -30,5 +30,20 @@ public enum LengthUnit implements IMeasurable {
     @Override
     public String getUnitName() {
         return this.name();
+    }
+
+    @Override
+    public String getMeasurementType() {
+        return "LengthUnit";
+    }
+
+    @Override
+    public boolean supportsArithmetic() {
+        return IMeasurable.super.supportsArithmetic();
+    }
+
+    @Override
+    public void validateOperationSupport(String operation) {
+        IMeasurable.super.validateOperationSupport(operation);
     }
 }

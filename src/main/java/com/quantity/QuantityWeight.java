@@ -1,5 +1,7 @@
 package com.quantity;
 
+import com.quantity.unit.WeightUnit;
+
 public class QuantityWeight {
     private final double value;
     private final WeightUnit unit;

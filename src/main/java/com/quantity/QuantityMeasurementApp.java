@@ -1,53 +1,40 @@
 package com.quantity;
 
+import com.quantity.controller.QuantityMeasurementController;
+import com.quantity.dto.QuantityDTO;
+import com.quantity.repository.QuantityMeasurementCacheRepository;
+import com.quantity.service.QuantityMeasurementServiceImpl;
+import com.quantity.unit.IMeasurable;
+import com.quantity.unit.TemperatureUnit;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class QuantityMeasurementApp {
+	private final QuantityMeasurementController controller;
 
-	public static <U extends IMeasurable> void demonstrateEquality(Quantity<U> a, Quantity<U> b) {
-		System.out.println(a + " == " + b + " : " + a.equals(b));
-	}
-
-	public static <U extends IMeasurable> void demonstrateConversion(Quantity<U> a, U targetUnit) {
-		System.out.println("convert(" + a + " to " + targetUnit.getUnitName() + ") = " + a.convertTo(targetUnit));
-	}
-
-	public static <U extends IMeasurable> void demonstrateAddition(Quantity<U> a, Quantity<U> b, U targetUnit) {
-		System.out.println("add(" + a + ", " + b + ", " + targetUnit.getUnitName() + ") = " + a.add(b, targetUnit));
-	}
-
-	public static <U extends IMeasurable> void demonstrateSubtraction(Quantity<U> a, Quantity<U> b, U targetUnit) {
-		System.out.println("subtract(" + a + ", " + b + ", " + targetUnit.getUnitName() + ") = " + a.subtract(b, targetUnit));
-	}
-
-	public static <U extends IMeasurable> void demonstrateDivision(Quantity<U> a, Quantity<U> b) {
-		System.out.println("divide(" + a + ", " + b + ") = " + a.divide(b));
+	public QuantityMeasurementApp() {
+		QuantityMeasurementCacheRepository repository = QuantityMeasurementCacheRepository.getInstance();
+		QuantityMeasurementServiceImpl service = new QuantityMeasurementServiceImpl(repository);
+		this.controller = new QuantityMeasurementController(service);
 	}
 
 	public static void main(String[] args) {
-		Quantity<TemperatureUnit> t1 = new Quantity<>(0.0, TemperatureUnit.CELSIUS);
-		Quantity<TemperatureUnit> t2 = new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
-		demonstrateEquality(t1, t2);
-		demonstrateConversion(t1, TemperatureUnit.FAHRENHEIT);
-		demonstrateConversion(t2, TemperatureUnit.CELSIUS);
+		QuantityMeasurementApp app = new QuantityMeasurementApp();
 
-		try {
-			t1.add(t2);
-		} catch (UnsupportedOperationException e) {
-			System.out.println("Caught: " + e.getMessage());
-		}
+		QuantityDTO feet = new QuantityDTO(1.0, "FEET", "LengthUnit");
+		QuantityDTO inches = new QuantityDTO(12.0, "INCH", "LengthUnit");
+		app.controller.performComparison(feet, inches);
+		app.controller.performConversion(feet, "INCH");
+		app.controller.performAddition(feet, inches, "FEET");
+		app.controller.performSubtraction(new QuantityDTO(10.0, "FEET", "LengthUnit"),
+				new QuantityDTO(6.0, "INCH", "LengthUnit"));
+		app.controller.performDivision(new QuantityDTO(10.0, "FEET", "LengthUnit"),
+				new QuantityDTO(2.0, "FEET", "LengthUnit"));
 
-		try {
-			t1.subtract(t2);
-		} catch (UnsupportedOperationException e) {
-			System.out.println("Caught: " + e.getMessage());
-		}
-
-		try {
-			t1.divide(t2);
-		} catch (UnsupportedOperationException e) {
-			System.out.println("Caught: " + e.getMessage());
-		}
+		QuantityDTO celsius = new QuantityDTO(0.0, "CELSIUS", "TemperatureUnit");
+		QuantityDTO fahrenheit = new QuantityDTO(32.0, "FAHRENHEIT", "TemperatureUnit");
+		app.controller.performComparison(celsius, fahrenheit);
+		app.controller.performConversion(celsius, "FAHRENHEIT");
+		app.controller.performAddition(celsius, fahrenheit);
 	}
 }
