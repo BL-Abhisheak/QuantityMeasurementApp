@@ -1,8 +1,9 @@
 package com.quantity.unit;
 
 public enum LengthUnit implements IMeasurable {
+
     FEET(1.0),
-    INCH(1.0 / 12.0),
+    INCHES(1.0 / 12.0),
     YARDS(3.0),
     CENTIMETERS(1.0 / 30.48);
 
@@ -29,21 +30,6 @@ public enum LengthUnit implements IMeasurable {
 
     @Override
     public String getUnitName() {
-        return this.name();
-    }
-
-    @Override
-    public String getMeasurementType() {
-        return "LengthUnit";
-    }
-
-    @Override
-    public boolean supportsArithmetic() {
-        return IMeasurable.super.supportsArithmetic();
-    }
-
-    @Override
-    public void validateOperationSupport(String operation) {
-        IMeasurable.super.validateOperationSupport(operation);
+        return name();
     }
 }

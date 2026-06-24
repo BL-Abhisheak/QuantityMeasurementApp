@@ -1,12 +1,22 @@
 package com.quantity.service;
 import com.quantity.dto.QuantityDTO;
+import com.quantity.model.QuantityMeasurementEntity;
+
 
 public interface IQuantityMeasurementService {
-    boolean compare(QuantityDTO a, QuantityDTO b);
-    QuantityDTO convert(QuantityDTO source, String targetUnit);
-    QuantityDTO add(QuantityDTO a, QuantityDTO b);
-    QuantityDTO add(QuantityDTO a, QuantityDTO b, String targetUnit);
-    QuantityDTO subtract(QuantityDTO a, QuantityDTO b);
-    QuantityDTO subtract(QuantityDTO a, QuantityDTO b, String targetUnit);
-    double divide(QuantityDTO a, QuantityDTO b);
+
+    QuantityMeasurementEntity compare(
+            QuantityDTO q1,
+            QuantityDTO q2
+    );
+
+    QuantityMeasurementEntity convert(
+            QuantityDTO q,
+            String targetUnit
+    );
+
+    QuantityMeasurementEntity add(
+            QuantityDTO q1,
+            QuantityDTO q2
+    );
 }

@@ -1,48 +1,33 @@
 package com.quantity.unit;
+
+import java.util.function.Function;
+
 import java.util.function.Function;
 
 public enum TemperatureUnit implements IMeasurable {
-    CELSIUS {
-        private final Function<Double, Double> toCelsius = celsius -> celsius;
-        private final Function<Double, Double> fromCelsius = celsius -> celsius;
 
-        @Override
-        public double convertToBaseUnit(double value) {
-            return toCelsius.apply(value);
-        }
+    CELSIUS(
+            c -> c,
+            c -> c
+    ),
 
-        @Override
-        public double convertFromBaseUnit(double baseValue) {
-            return fromCelsius.apply(baseValue);
-        }
+    FAHRENHEIT(
+            f -> (f - 32) * 5 / 9,
+            c -> (c * 9 / 5) + 32
+    );
 
-        @Override
-        public Object getMeasurementType() {
-            return null;
-        }
+    private final Function<Double, Double> toBase;
+    private final Function<Double, Double> fromBase;
 
-    },
-    FAHRENHEIT {
-        private final Function<Double, Double> toCelsius = f -> (f - 32.0) * 5.0 / 9.0;
-        private final Function<Double, Double> fromCelsius = c -> Math.round((c * 9.0 / 5.0 + 32.0) * 100.0) / 100.0;
+    private final SupportsArithmetic supportsArithmetic = () -> false;
 
-        @Override
-        public double convertToBaseUnit(double value) {
-            return toCelsius.apply(value);
-        }
-
-        @Override
-        public double convertFromBaseUnit(double baseValue) {
-            return fromCelsius.apply(baseValue);
-        }
-
-        @Override
-        public String getMeasurementType() {
-            return "";
-        }
-    };
-
-    public final SupportsArithmetic supportsArithmetic = () -> false;
+    TemperatureUnit(
+            Function<Double, Double> toBase,
+            Function<Double, Double> fromBase
+    ) {
+        this.toBase = toBase;
+        this.fromBase = fromBase;
+    }
 
     @Override
     public double getConversionFactor() {
@@ -50,8 +35,18 @@ public enum TemperatureUnit implements IMeasurable {
     }
 
     @Override
+    public double convertToBaseUnit(double value) {
+        return toBase.apply(value);
+    }
+
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        return fromBase.apply(baseValue);
+    }
+
+    @Override
     public String getUnitName() {
-        return this.name();
+        return name();
     }
 
     @Override
@@ -61,6 +56,9 @@ public enum TemperatureUnit implements IMeasurable {
 
     @Override
     public void validateOperationSupport(String operation) {
-        throw new UnsupportedOperationException("Temperature does not support " + operation + " operations");
+        throw new UnsupportedOperationException(
+                "Temperature does not support " + operation +
+                        " operation (non-linear scale)"
+        );
     }
 }
