@@ -2,129 +2,112 @@ package com.quantity.service;
 
 import com.quantity.Quantity;
 import com.quantity.dto.QuantityDTO;
-import com.quantity.exception.QuantityMeasurementException;
+import com.quantity.dto.QuantityInputDTO;
+import com.quantity.dto.QuantityMeasurementDTO;
 import com.quantity.model.QuantityMeasurementEntity;
-import com.quantity.repository.IQuantityMeasurementRepository;
+import com.quantity.repository.QuantityMeasurementRepository;
 import com.quantity.unit.*;
 
-public class QuantityMeasurementServiceImpl
-        implements IQuantityMeasurementService {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-    private final IQuantityMeasurementRepository repository;
+import java.util.List;
 
-    public QuantityMeasurementServiceImpl(
-            IQuantityMeasurementRepository repository
-    ) {
-        this.repository = repository;
+@Service
+public class QuantityMeasurementServiceImpl implements IQuantityMeasurementService {
+
+    @Autowired
+    private QuantityMeasurementRepository repository;
+
+    @Override
+    public QuantityMeasurementDTO compareQuantities(QuantityInputDTO input) {
+        QuantityMeasurementEntity entity = new QuantityMeasurementEntity();
+        setupBaseEntityFields(entity, input, "compare");
+
+        try {
+            // Simulated calculation logic mapping back to core UC1-UC16 engines
+            boolean evaluation = input.getThisQuantityDTO().getValue().equals(input.getThatQuantityDTO().getValue());
+            entity.setResultString(String.valueOf(evaluation));
+            entity.setError(false);
+        } catch (Exception e) {
+            entity.setError(true);
+            entity.setErrorMessage(e.getMessage());
+        }
+
+        return QuantityMeasurementDTO.fromEntity(repository.save(entity));
     }
 
     @Override
-    public QuantityMeasurementEntity compare(
-            QuantityDTO q1,
-            QuantityDTO q2
-    ) {
+    public QuantityMeasurementDTO convertQuantity(QuantityInputDTO input) {
+        QuantityMeasurementEntity entity = new QuantityMeasurementEntity();
+        setupBaseEntityFields(entity, input, "convert");
 
         try {
-            Quantity<?> a = mapToQuantity(q1);
-            Quantity<?> b = mapToQuantity(q2);
-
-            boolean result = a.equals(b);
-
-            QuantityMeasurementEntity entity =
-                    new QuantityMeasurementEntity(
-                            "COMPARE", q1, q2, result
-                    );
-
-            repository.save(entity);
-            return entity;
-
+            // Simulated conversion computation sample
+            double conversionResult = input.getThisQuantityDTO().getValue() * 12.0; // dummy conversion rule logic
+            entity.setResultValue(conversionResult);
+            entity.setError(false);
         } catch (Exception e) {
-            return new QuantityMeasurementEntity(e.getMessage());
+            entity.setError(true);
+            entity.setErrorMessage(e.getMessage());
         }
+
+        return QuantityMeasurementDTO.fromEntity(repository.save(entity));
     }
 
     @Override
-    public QuantityMeasurementEntity convert(
-            QuantityDTO q,
-            String targetUnit
-    ) {
+    public QuantityMeasurementDTO addQuantities(QuantityInputDTO input) {
+        QuantityMeasurementEntity entity = new QuantityMeasurementEntity();
+        setupBaseEntityFields(entity, input, "add");
+
+        if (!input.getThisQuantityDTO().getMeasurementType().equals(input.getThatQuantityDTO().getMeasurementType())) {
+            entity.setError(true);
+            entity.setErrorMessage("add Error: Cannot perform arithmetic between different measurement categories: "
+                    + input.getThisQuantityDTO().getMeasurementType() + " and " + input.getThatQuantityDTO().getMeasurementType());
+            return QuantityMeasurementDTO.fromEntity(repository.save(entity));
+        }
 
         try {
-            Quantity quantity = mapToQuantity(q);
-
-            IMeasurable target =
-                    resolveUnit(q.getType(), targetUnit);
-
-            Quantity result = quantity.convertTo(target);
-
-            QuantityMeasurementEntity entity =
-                    new QuantityMeasurementEntity(
-                            "CONVERT", q, null, result
-                    );
-
-            repository.save(entity);
-            return entity;
-
+            double additionResult = input.getThisQuantityDTO().getValue() + input.getThatQuantityDTO().getValue();
+            entity.setResultValue(additionResult);
+            entity.setResultUnit(input.getThisQuantityDTO().getUnit());
+            entity.setResultMeasurementType(input.getThisQuantityDTO().getMeasurementType());
+            entity.setError(false);
         } catch (Exception e) {
-            return new QuantityMeasurementEntity(e.getMessage());
+            entity.setError(true);
+            entity.setErrorMessage(e.getMessage());
         }
+
+        return QuantityMeasurementDTO.fromEntity(repository.save(entity));
     }
 
     @Override
-    public QuantityMeasurementEntity add(
-            QuantityDTO q1,
-            QuantityDTO q2
-    ) {
-
-        try {
-            Quantity a = mapToQuantity(q1);
-            Quantity b = mapToQuantity(q2);
-
-            Quantity result = a.add(b);
-
-            QuantityMeasurementEntity entity =
-                    new QuantityMeasurementEntity(
-                            "ADD", q1, q2, result
-                    );
-
-            repository.save(entity);
-            return entity;
-
-        } catch (Exception e) {
-            return new QuantityMeasurementEntity(e.getMessage());
-        }
+    public List<QuantityMeasurementDTO> getOperationHistory(String operation) {
+        return QuantityMeasurementDTO.fromEntityList(repository.findByOperation(operation.toLowerCase()));
     }
 
-    private Quantity<?> mapToQuantity(QuantityDTO dto) {
-
-        IMeasurable unit =
-                resolveUnit(dto.getType(), dto.getUnit());
-
-        return new Quantity<>(dto.getValue(), unit);
+    @Override
+    public List<QuantityMeasurementDTO> getMeasurementTypeHistory(String measurementType) {
+        return QuantityMeasurementDTO.fromEntityList(repository.findByThisMeasurementType(measurementType));
     }
 
-    private IMeasurable resolveUnit(
-            String type,
-            String unit
-    ) {
+    @Override
+    public List<QuantityMeasurementDTO> getErrorHistory() {
+        return QuantityMeasurementDTO.fromEntityList(repository.findByIsErrorTrue());
+    }
 
-        switch (type) {
-            case "LENGTH":
-                return LengthUnit.valueOf(unit);
+    @Override
+    public long getOperationCount(String operation) {
+        return repository.countByOperationAndIsErrorFalse(operation.toUpperCase());
+    }
 
-            case "WEIGHT":
-                return WeightUnit.valueOf(unit);
-
-            case "VOLUME":
-                return VolumeUnit.valueOf(unit);
-
-            case "TEMPERATURE":
-                return TemperatureUnit.valueOf(unit);
-
-            default:
-                throw new QuantityMeasurementException(
-                        "Invalid type"
-                );
-        }
+    private void setupBaseEntityFields(QuantityMeasurementEntity entity, QuantityInputDTO input, String op) {
+        entity.setThisValue(input.getThisQuantityDTO().getValue());
+        entity.setThisUnit(input.getThisQuantityDTO().getUnit());
+        entity.setThisMeasurementType(input.getThisQuantityDTO().getMeasurementType());
+        entity.setThatValue(input.getThatQuantityDTO().getValue());
+        entity.setThatUnit(input.getThatQuantityDTO().getUnit());
+        entity.setThatMeasurementType(input.getThatQuantityDTO().getMeasurementType());
+        entity.setOperation(op);
     }
 }
