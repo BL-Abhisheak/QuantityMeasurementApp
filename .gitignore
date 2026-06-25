@@ -1,0 +1,56 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+
+#
+## Ignore everything
+#*
+#
+## Allow Git to traverse directories
+#!*/
+#
+## Keep README and .gitignore
+#!README.md
+#
+## Track source directories
+#!src/
+#!src/main/
+#!src/main/**
+#
+#!src/test/
+#!src/test/**
+#
+## Explicitly ignore build output directories
+#target/
+#**/target/
